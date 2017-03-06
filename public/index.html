@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html ng-app='memberApp'>
+
+<head>
+    <title>BES</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.min.js"></script>
+    <script src='./appController.js'></script>
+</head>
+
+<body ng-controller='memberController as mCtrl'>
+
+    <h1>Team</h1>
+    <h2>{{mCtrl.team.title}}</h2>
+    {{mCtrl.team.address}}
+    <br> {{mCtrl.team.city}}, {{mCtrl.team.state}} {{mCtrl.team.zip}} {{mCtrl.team.country}}
+    <br> Latt: {{mCtrl.team.lat}} Long:{{mCtrl.team.lng}}
+    <h4>Voting Members: {{mCtrl.count_voting}} Quorum: {{mCtrl.quorum}} </h4>
+    {{mCtrl.team.count_members}} members ({{mCtrl.team.count_operational}} operational/{{mCtrl.team.count_members - mCtrl.team.count_operational}}
+    non-operational)
+    <br> Rescuers: {{mCtrl.count_rescuer}} Reserves: {{mCtrl.count_reserve}} Candidate: {{mCtrl.count_candidate}} Adjunct:
+    {{mCtrl.count_adjunct}} Associate: {{mCtrl.count_associate}} Public: {{mCtrl.count_non_member}}
+
+    <h2>Simulate Page</h2>
+    <form>
+        <textarea style='height:40px;width:400px' type="text" ng-model='mCtrl.textMsg'></textarea>
+        <br>
+        <button ng-click='mCtrl.page(false)'>Send Page</button>
+        <button ng-click='mCtrl.page(true)'>Send Page to D4H</button>
+    </form>
+    <span>
+        <label>Directions</label>
+        <button onclick='window.open("http://localhost:8080/directions?route=viaStation")'>Route</button>
+        <button onclick='window.open("http://localhost:8080/directions?route=direct")'>Direct</button>
+        <button onclick='window.open("http://localhost:8080/location")'>Map</button>
+           <button onclick='calculateAndDisplayRoute(directionsService, directionsDisplay)'>Map It</button>
+    </span>
+
+<!--under construction-->
+    <!--<iframe ng-src="{{mCtrl.map}}"></iframe>-->
+
+    <div id="map"></div> 
+    <script>
+      function initMap() {
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 7,
+          center: {lat: 41.85, lng: -87.65}
+        });
+        directionsDisplay.setMap(map);
+
+        var onChangeHandler = function() {
+          calculateAndDisplayRoute(directionsService, directionsDisplay);
+        };
+        document.getElementById('end').addEventListener('change', onChangeHandler);
+      }
+
+      function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+        directionsService.route({
+          origin: "3532 Diagonal Hwy, Boulder, CO",
+          destination: "123 Main St, Longmont, CO",
+          travelMode: 'DRIVING'
+        }, function(response, status) {
+          if (status === 'OK') {
+            directionsDisplay.setDirections(response);
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
+      }
+    </script>
+    <script async defer
+        ng-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_TJyPPtV493ys448Kv0XcSz0wt923oCg&callback=initMap">
+    </script>
+<!--under construction-->
+
+    <h2>Membership</h2>
+    <button ng-click='mCtrl.update()'>Update from D4H</button>
+    <h4> Filter</h4>
+    <input type='text' placeholder='Name' ng-model='mCtrl.filter.name'>
+    <input type='text' placeholder='Position' ng-model='mCtrl.filter.position'>
+    <select ng-model="mCtrl.class">
+        <option value="all">All</option>
+        <option value="rescuer">Rescuer</option>
+        <option value="reserve">Reserve</option>
+        <option value="candidate">Candidate</option>
+        <option value="adjunct">Adjunct</option>
+        <option value="associate">Associate</option>
+        <option value="non-member">Public</option>
+    </select>
+    <select ng-model="mCtrl.operational">
+        <option value="all">All</option>
+        <option value="operational">Operational</option>
+        <option value="non-operational">Non-Operational</option>
+    </select>
+    <select ng-model="mCtrl.voting">
+        <option value="all">All</option>
+        <option value="voting">Voting Only</option>
+    </select>
+
+    <form ng-show='mCtrl.selected'>
+        <h4>Member Detail</h4>
+        {{mCtrl.member.rank}} {{mCtrl.member.name}}
+        <br>{{mCtrl.member.status.name}} {{mCtrl.member.classification}}
+        <br>{{mCtrl.member.position}}
+        <br>Radio #{{mCtrl.member.radioNum}}
+        <br>
+        <!--edit in place-->
+        <!--TODO: initialize all mCtrl.PROP=false on submit-->
+        <!--Not worth doing until we can update d4h member data via their API-->
+        <label ng-init='mCtrl.gender=true' ng-click='mCtrl.gender=!mCtrl.gender'>Gender:</label>
+        <label ng-show='mCtrl.gender'>{{mCtrl.member.gender}}</label>
+        <input ng-hide='mCtrl.gender' type="text" ng-model='mCtrl.member.gender'>
+        <label ng-init='mCtrl.DOB=true' ng-click='mCtrl.DOB=!mCtrl.DOB'>DOB:</label>
+        <label ng-show='mCtrl.DOB'>{{mCtrl.member.birthdate}}</label>
+        <input ng-hide='mCtrl.DOB' type="text" ng-model='mCtrl.member.birthdate'>
+        <br>
+        <label ng-init='mCtrl.hair=true' ng-click='mCtrl.hair=!mCtrl.hair'>Hair:</label>
+        <label ng-show='mCtrl.hair'>{{mCtrl.member.hair_color}}</label>
+        <input ng-hide='mCtrl.hair' type="text" ng-model='mCtrl.member.hair_color'>
+        <label ng-init='mCtrl.eyes=true' ng-click='mCtrl.eyes=!mCtrl.eyes'>Eyes:</label>
+        <label ng-show='mCtrl.eyes'>{{mCtrl.member.eye_color}}</label>
+        <input ng-hide='mCtrl.eyes' type="text" ng-model='mCtrl.member.eye_color'>
+        <br>
+        <button ng-click='mCtrl.putMember()'>Update to DB</button>
+        <br>
+    </form>
+    <ol>
+        <li ng-repeat='member in mCtrl.memberArray | orderBy:member.name 
+            | filter:mCtrl.filter | filter:mCtrl.votingFilter 
+            | filter:mCtrl.operationalFilter | filter:mCtrl.classFilter'>
+            <button ng-click="mCtrl.getMember(member)">Select</button> {{member.name}} ({{member.ref}})
+        </li>
+    </ol>
+</body>
+
+</html>
